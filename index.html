@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вероятностный анализ стойкости пароля</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>🔐 Оценка стойкости пароля</h1>
+            <p class="subtitle">На основе теории вероятностей и комбинаторики</p>
+        </div>
+    </div>
+
+    <div class="container main-content">
+        <div class="card input-section">
+            <h2>Введите пароль для анализа</h2>
+            <input type="text" id="passwordInput" placeholder="Введите пароль..." autocomplete="off" spellcheck="false">
+            
+        </div>
+
+        <div class="card attack-settings">
+            <h3>⚙️ Параметры атаки</h3>
+            <p class="setting-desc">Выберите мощность оборудования атакующего:</p>
+            <div class="attack-options">
+                <label class="attack-option">
+                    <input type="radio" name="attackPower" value="10000000" data-label="Домашний ПК">
+                    <span class="option-card">
+                        <span class="option-icon">💻</span>
+                        <span class="option-name">Домашний ПК</span>
+                        <span class="option-value">10⁷ хешей/сек</span>
+                    </span>
+                </label>
+                <label class="attack-option">
+                    <input type="radio" name="attackPower" value="1000000000" data-label="Ботнет" checked>
+                    <span class="option-card">
+                        <span class="option-icon">🌐</span>
+                        <span class="option-name">Ботнет</span>
+                        <span class="option-value">10⁹ хешей/сек</span>
+                    </span>
+                </label>
+                <label class="attack-option">
+                    <input type="radio" name="attackPower" value="1000000000000" data-label="Спецоборудование">
+                    <span class="option-card">
+                        <span class="option-icon">🖥️</span>
+                        <span class="option-name">Спецоборудование</span>
+                        <span class="option-value">10¹² хешей/сек</span>
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <div id="results" class="hidden">
+            <div class="results-grid">
+                <div class="card metric-card">
+                    <div class="metric-icon">📊</div>
+                    <h3>Пространство перебора (N)</h3>
+                    <p class="metric-value" id="searchSpace">-</p>
+                    <p class="metric-desc">Общее количество комбинаций</p>
+                </div>
+
+                <div class="card metric-card">
+                    <div class="metric-icon">⏱️</div>
+                    <h3>Время взлома</h3>
+                    <p class="metric-value" id="crackTime">-</p>
+                    <p class="metric-desc" id="attackPowerLabel">При мощности 10⁹ хешей/сек</p>
+                </div>
+
+                <div class="card metric-card">
+                    <div class="metric-icon">📈</div>
+                    <h3>Энтропия пароля</h3>
+                    <p class="metric-value" id="entropyValue">-</p>
+                    <p class="metric-desc">Мера неопределённости в битах</p>
+                </div>
+
+                <div class="card metric-card">
+                    <div class="metric-icon">🎯</div>
+                    <h3>Эффективная энтропия</h3>
+                    <p class="metric-value" id="effectiveEntropy">-</p>
+                    <p class="metric-desc">С учётом паттернов</p>
+                </div>
+            </div>
+
+            <div class="card chart-section">
+                <h3>📊 Рост стойкости от длины пароля</h3>
+                <div class="chart-explanation">
+                    <p><strong>Ось X:</strong> Длина пароля (символы)</p>
+                    <p><strong>Ось Y:</strong> Порядок числа (10^x) — например, 20 означает 10²⁰ комбинаций</p>
+                    <p class="highlight"><strong>Для заданного пароля:</strong> каждый +1 символ увеличивает стойкость в <span id="growthFactor">-</span> раз!</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="strengthChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card recommendations-section">
+                <h3>💡 Рекомендации</h3>
+                <ul id="recommendations"></ul>
+            </div>
+
+            <!-- ПОДРОБНЫЕ ПОЯСНЕНИЯ -->
+            <div class="card explanation-card">
+                <h2>📐 Подробный математический разбор</h2>
+                <p class="explanation-intro">Анализ для пароля: <code id="analyzedPassword">-</code></p>
+                
+                <div class="explanation-block">
+                    <h3>1. Пространство перебора (N)</h3>
+                    <div class="formula-box">
+                        <strong>N = R<sup>L</sup></strong>
+                    </div>
+                    <div class="explanation-content">
+                        <p><strong>Что это:</strong> Общее количество всех возможных комбинаций символов заданной длины.</p>
+                        <p><strong>Расчёт для вашего пароля:</strong></p>
+                        <ul>
+                            <li>Длина пароля <strong>L = <span id="expLength">-</span></strong> символов</li>
+                            <li>Используемые категории:
+                                <ul id="expCategories">
+                                    <li id="catDigits" class="hidden">• Цифры (0-9): 10 символов</li>
+                                    <li id="catLower" class="hidden">• Строчные буквы (a-z): 26 символов</li>
+                                    <li id="catUpper" class="hidden">• Заглавные буквы (A-Z): 26 символов</li>
+                                    <li id="catSpecial" class="hidden">• Спецсимволы: 32 символа</li>
+                                </ul>
+                            </li>
+                            <li>Мощность алфавита <strong>R = <span id="expAlphabet">-</span></strong></li>
+                            <li><strong>N = <span id="expR">-</span><sup><span id="expL">-</span></sup> = <span id="expN">-</span></strong></li>
+                        </ul>
+                        <p class="note">Это означает, что злоумышленнику теоретически нужно перебрать <strong id="expNText">-</strong> комбинаций в худшем случае.</p>
+                    </div>
+                </div>
+
+                <div class="explanation-block">
+                    <h3>2. Время взлома (T)</h3>
+                    <div class="formula-box">
+                        <strong>T = N / (2 × H)</strong>
+                    </div>
+                    <div class="explanation-content">
+                        <p><strong>Что это:</strong> Математическое ожидание времени нахождения пароля методом полного перебора.</p>
+                        <p><strong>Расчёт для вашего пароля:</strong></p>
+                        <ul>
+                            <li>Пространство перебора <strong>N = <span id="expTimeN">-</span></strong></li>
+                            <li>Мощность атаки <strong>H = <span id="expH">-</span> хешей/сек</strong> (<span id="expAttackType">-</span>)</li>
+                            <li>Деление на 2: в среднем пароль находится на середине перебора</li>
+                            <li><strong>T = <span id="expTimeN2">-</span> / (2 × <span id="expH2">-</span>)</strong></li>
+                            <li><strong>T ≈ <span id="expTimeResult">-</span></strong></li>
+                        </ul>
+                        <p class="note">Это время при условии полного перебора. При использовании словарей и паттернов реальное время может быть меньше.</p>
+                    </div>
+                </div>
+
+                <div class="explanation-block">
+                    <h3>3. Энтропия пароля (H)</h3>
+                    <div class="formula-box">
+                        <strong>H = L × log₂(R)</strong>
+                    </div>
+                    <div class="explanation-content">
+                        <p><strong>Что это:</strong> Мера неопределённости в битах по Шеннону. Показывает, сколько информации содержится в пароле.</p>
+                        <p><strong>Расчёт для вашего пароля:</strong></p>
+                        <ul>
+                            <li>Длина <strong>L = <span id="expEntL">-</span></strong></li>
+                            <li>Алфавит <strong>R = <span id="expEntR">-</span></strong></li>
+                            <li>log₂(<span id="expEntR2">-</span>) ≈ <span id="expLogR">-</span> бит на символ</li>
+                            <li><strong>H = <span id="expEntL2">-</span> × <span id="expLogR2">-</span> = <span id="expEntropy">-</span> бит</strong></li>
+                        </ul>
+                        <p><strong>Интерпретация:</strong> <span id="expEntropyInterp">-</span></p>
+                    </div>
+                </div>
+
+                <div class="explanation-block">
+                    <h3>4. Эффективная энтропия (H<sub>eff</sub>)</h3>
+                    <div class="formula-box">
+                        <strong>H<sub>eff</sub> = H<sub>теор</sub> − H<sub>потерь</sub></strong>
+                    </div>
+                    <div class="explanation-content">
+                        <p><strong>Что это:</strong> Реальная стойкость с учётом того, что люди используют предсказуемые паттерны.</p>
+                        <p><strong>Расчёт для вашего пароля:</strong></p>
+                        <ul>
+                            <li>Теоретическая энтропия <strong>H<sub>теор</sub> = <span id="expTheorEnt">-</span> бит</strong></li>
+                            <li>Найденные паттерны:
+                                <ul id="expPatterns">
+                                    <li id="noPatterns">✅ Паттерны не обнаружены</li>
+                                </ul>
+                            </li>
+                            <li>Общие потери <strong>H<sub>потерь</sub> = <span id="expLoss">-</span> бит</strong></li>
+                            <li><strong>H<sub>eff</sub> = <span id="expHTheor">-</span> − <span id="expHLoss">-</span> = <span id="expHEff">-</span> бит</strong></li>
+                        </ul>
+                        <div id="expWarning" class="warning-box hidden">
+                            <strong>⚠️ Внимание!</strong> Из-за паттернов пароль потерял <span id="expLossPercent">-</span>% стойкости!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="container">
+            <p>Проект для научной конференции секции «Математические модели и их приложения»</p>
+            <p>Выполнен Артемьевым Д. А. и Гараниным С. П.</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
