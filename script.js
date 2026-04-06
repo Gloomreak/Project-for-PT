@@ -6,6 +6,7 @@ const entropyEl = document.getElementById('entropyValue');
 const effectiveEntropyEl = document.getElementById('effectiveEntropy');
 const attackPowerLabel = document.getElementById('attackPowerLabel');
 const growthFactorEl = document.getElementById('growthFactor');
+const breachStatusEl = document.getElementById('breachStatus');
 
 let ATTACK_POWER = 1000000000;
 let chartInstance = null;
@@ -64,11 +65,13 @@ passwordInput.addEventListener('input', function() {
     crackTimeEl.textContent = formatTime(expectedTime);
     entropyEl.textContent = entropy.toFixed(1) + ' бит';
     effectiveEntropyEl.textContent = effectiveEntropy.toFixed(1) + ' бит';
+
+    checkBreach(password);
     
     entropyEl.style.color = getEntropyColor(entropy);
     effectiveEntropyEl.style.color = getEntropyColor(effectiveEntropy);
     growthFactorEl.textContent = poolSize;
-    
+		
     updateExplanations(password, poolSize, length, searchSpace, expectedTime, entropy, effectiveEntropy, patternLoss);
     renderChart(length, poolSize);
     generateRecommendations(password, poolSize, length, entropy, effectiveEntropy, patternLoss);
@@ -228,7 +231,6 @@ function renderChart(currentLength, poolSize) {
     const labels = [];
     const data = [];
     
-    // ИЗМЕНЕНИЕ: начинаем с 0, а не с 1
     for (let i = 0; i <= maxLen; i++) {
         labels.push(i);
         data.push((i * Math.log10(poolSize)).toFixed(1));
@@ -238,7 +240,7 @@ function renderChart(currentLength, poolSize) {
     
     chartInstance = new Chart(context, {
         type: 'line',
-         {
+        data: {
             labels: labels,
             datasets: [{
                 label: 'log₁₀(N)',
@@ -246,9 +248,7 @@ function renderChart(currentLength, poolSize) {
                 borderColor: '#667eea',
                 backgroundColor: 'rgba(102, 126, 234, 0.1)',
                 tension: 0.4,
-                fill: true,
-                pointRadius: i === 0 ? 3 : 5,  // Можно выделить точку (0,0)
-                pointBackgroundColor: i === 0 ? '#764ba2' : '#667eea'
+                fill: true
             }]
         },
         options: {
@@ -256,11 +256,11 @@ function renderChart(currentLength, poolSize) {
             maintainAspectRatio: false,
             scales: {
                 y: {
-                    beginAtZero: true,  // Это уже есть
+                    beginAtZero: true,
                     title: { display: true, text: 'Порядок числа (10^x)' }
                 },
                 x: {
-                    beginAtZero: true,  // ДОБАВИТЬ: чтобы ось X тоже начиналась с 0
+		    beginAtZero: true,
                     title: { display: true, text: 'Длина пароля' }
                 }
             }
@@ -285,3 +285,63 @@ function generateRecommendations(password, poolSize, length, entropy, effectiveE
     if (!/[^a-zA-Z0-9]/.test(password)) add('➕ Добавьте спецсимволы');
     if (effectiveEntropy >= 80) add('🟢 Отличная энтропия!');
 }
+
+async function checkBreach(password) {
+    try {
+        breachStatusEl.textContent = 'Проверка...';
+        breachStatusEl.style.color = '#f57c00';
+        
+        const commonPasswords = [
+            '123456', 'password', '12345678', 'qwerty', '123456789',
+            '12345', '1234', '111111', '1234567', 'dragon',
+            '123123', 'baseball', 'iloveyou', 'trustno1', 'sunshine',
+            'master', 'welcome', 'shadow', 'ashley', 'football',
+            'jesus', 'michael', 'ninja', 'mustang', 'password1',
+            '1234567890', '2024', '2023', 'admin', 'root'
+        ];
+        
+        if (commonPasswords.includes(password.toLowerCase())) {
+            breachStatusEl.textContent = '⚠️ Найден в базе популярных паролей';
+            breachStatusEl.style.color = '#c62828';
+            return;
+        }
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        
+        const hash = await CryptoJS.SHA1(password).toString().toUpperCase();
+        const prefix = hash.substring(0, 5);
+        const suffix = hash.substring(5);
+        
+        const response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`, {
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) throw new Error('API error');
+        
+        const data = await response.text();
+        const lines = data.split('\n');
+        const found = lines.find(line => line.startsWith(suffix));
+        
+        if (found) {
+            const count = found.split(':')[1].trim();
+            breachStatusEl.textContent = `⚠️ Найден в базах (${parseInt(count).toLocaleString()} раз)`;
+            breachStatusEl.style.color = '#c62828';
+        } else {
+            breachStatusEl.textContent = '✅ Не найден в известных утечках';
+            breachStatusEl.style.color = '#2e7d32';
+        }
+        
+    } catch (error) {
+        if (password.length >= 12 && /[A-Z]/.test(password) && /[^a-zA-Z0-9]/.test(password)) {
+            breachStatusEl.textContent = '✅ (Оффлайн) Пароль достаточно сложен';
+            breachStatusEl.style.color = '#2e7d32';
+        } else {
+            breachStatusEl.textContent = 'ℹ️ Проверка недоступна';
+            breachStatusEl.style.color = '#757575';
+        }
+    }
+}
+
