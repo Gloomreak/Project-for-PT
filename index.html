@@ -143,14 +143,14 @@
                 <div class="explanation-block">
                     <h3>2. Время взлома (T)</h3>
                     <div class="formula-box">
-                        <strong>T = N / (2 × H)</strong>
+                        <strong>T = N / (2 × P)</strong>
                     </div>
                     <div class="explanation-content">
                         <p><strong>Что это:</strong> Математическое ожидание времени нахождения пароля методом полного перебора.</p>
                         <p><strong>Расчёт для вашего пароля:</strong></p>
                         <ul>
                             <li>Пространство перебора <strong>N = <span id="expTimeN">-</span></strong></li>
-                            <li>Мощность атаки <strong>H = <span id="expH">-</span> хешей/сек</strong> (<span id="expAttackType">-</span>)</li>
+                            <li>Мощность атаки <strong>P = <span id="expH">-</span> хешей/сек</strong> (<span id="expAttackType">-</span>)</li>
                             <li>Деление на 2: в среднем пароль находится на середине перебора</li>
                             <li><strong>T = <span id="expTimeN2">-</span> / (2 × <span id="expH2">-</span>)</strong></li>
                             <li><strong>T ≈ <span id="expTimeResult">-</span></strong></li>
@@ -178,9 +178,9 @@
                 </div>
 
                 <div class="explanation-block">
-                    <h3>4. Эффективная энтропия (H<sub>eff</sub>)</h3>
+                    <h3>4. Эффективная энтропия (H<sub>эфф</sub>)</h3>
                     <div class="formula-box">
-                        <strong>H<sub>eff</sub> = H<sub>теор</sub> − H<sub>потерь</sub></strong>
+                        <strong>H<sub>эфф</sub> = H<sub>теор</sub> − H<sub>потерь</sub></strong>
                     </div>
                     <div class="explanation-content">
                         <p><strong>Что это:</strong> Реальная стойкость с учётом того, что люди используют предсказуемые паттерны.</p>
@@ -193,7 +193,7 @@
                                 </ul>
                             </li>
                             <li>Общие потери <strong>H<sub>потерь</sub> = <span id="expLoss">-</span> бит</strong></li>
-                            <li><strong>H<sub>eff</sub> = <span id="expHTheor">-</span> − <span id="expHLoss">-</span> = <span id="expHEff">-</span> бит</strong></li>
+                            <li><strong>H<sub>эфф</sub> = <span id="expHTheor">-</span> − <span id="expHLoss">-</span> = <span id="expHEff">-</span> бит</strong></li>
                         </ul>
                         <div id="expWarning" class="warning-box hidden">
                             <strong>⚠️ Внимание!</strong> Из-за паттернов пароль потерял <span id="expLossPercent">-</span>% стойкости!
