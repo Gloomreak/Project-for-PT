@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вероятностный анализ стойкости пароля</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -83,6 +84,13 @@
                     <p class="metric-value" id="effectiveEntropy">-</p>
                     <p class="metric-desc">С учётом паттернов</p>
                 </div>
+
+		<div class="card metric-card">
+    			<div class="metric-icon">🔍</div>
+    			<h3>Статус утечки</h3>
+    			<p class="metric-value" id="breachStatus">Проверка...</p>
+    			<p class="metric-desc">Проверка по базам утёкших паролей</p>
+		</div>
             </div>
 
             <div class="card chart-section">
@@ -170,9 +178,9 @@
                 </div>
 
                 <div class="explanation-block">
-                    <h3>4. Эффективная энтропия (H<sub>эфф</sub>)</h3>
+                    <h3>4. Эффективная энтропия (H<sub>eff</sub>)</h3>
                     <div class="formula-box">
-                        <strong>H<sub>эфф</sub> = H<sub>теор</sub> − H<sub>потерь</sub></strong>
+                        <strong>H<sub>eff</sub> = H<sub>теор</sub> − H<sub>потерь</sub></strong>
                     </div>
                     <div class="explanation-content">
                         <p><strong>Что это:</strong> Реальная стойкость с учётом того, что люди используют предсказуемые паттерны.</p>
@@ -185,7 +193,7 @@
                                 </ul>
                             </li>
                             <li>Общие потери <strong>H<sub>потерь</sub> = <span id="expLoss">-</span> бит</strong></li>
-                            <li><strong>H<sub>эфф</sub> = <span id="expHTheor">-</span> − <span id="expHLoss">-</span> = <span id="expHEff">-</span> бит</strong></li>
+                            <li><strong>H<sub>eff</sub> = <span id="expHTheor">-</span> − <span id="expHLoss">-</span> = <span id="expHEff">-</span> бит</strong></li>
                         </ul>
                         <div id="expWarning" class="warning-box hidden">
                             <strong>⚠️ Внимание!</strong> Из-за паттернов пароль потерял <span id="expLossPercent">-</span>% стойкости!
