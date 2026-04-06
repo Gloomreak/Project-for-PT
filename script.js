@@ -228,7 +228,8 @@ function renderChart(currentLength, poolSize) {
     const labels = [];
     const data = [];
     
-    for (let i = 1; i <= maxLen; i++) {
+    // ИЗМЕНЕНИЕ: начинаем с 0, а не с 1
+    for (let i = 0; i <= maxLen; i++) {
         labels.push(i);
         data.push((i * Math.log10(poolSize)).toFixed(1));
     }
@@ -237,15 +238,17 @@ function renderChart(currentLength, poolSize) {
     
     chartInstance = new Chart(context, {
         type: 'line',
-        data: {
+         {
             labels: labels,
             datasets: [{
                 label: 'log₁₀(N)',
-                data: data,
+                 data,
                 borderColor: '#667eea',
                 backgroundColor: 'rgba(102, 126, 234, 0.1)',
                 tension: 0.4,
-                fill: true
+                fill: true,
+                pointRadius: i === 0 ? 3 : 5,  // Можно выделить точку (0,0)
+                pointBackgroundColor: i === 0 ? '#764ba2' : '#667eea'
             }]
         },
         options: {
@@ -253,10 +256,11 @@ function renderChart(currentLength, poolSize) {
             maintainAspectRatio: false,
             scales: {
                 y: {
-                    beginAtZero: true,
+                    beginAtZero: true,  // Это уже есть
                     title: { display: true, text: 'Порядок числа (10^x)' }
                 },
                 x: {
+                    beginAtZero: true,  // ДОБАВИТЬ: чтобы ось X тоже начиналась с 0
                     title: { display: true, text: 'Длина пароля' }
                 }
             }
