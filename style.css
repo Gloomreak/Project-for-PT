@@ -430,3 +430,9 @@ body {
     -webkit-text-fill-color: initial;
     animation: none;
 }
+
+/* Статус утечки */
+#breachStatus {
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+}
