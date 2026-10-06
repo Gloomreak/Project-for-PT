@@ -150,8 +150,8 @@ function updateExplanations(password, poolSize, length, searchSpace, expectedTim
     if (patterns.length === 0) {
         const li = document.createElement('li');
         li.id = 'noPatterns';
-        li.textContent = '✅ Паттерны не обнаружены';
-        li.style.color = '#388e3c';
+        li.textContent = 'Паттерны не обнаружены';
+        li.style.color = '#1e7a4c';
         patternsList.appendChild(li);
         document.getElementById('expWarning').classList.add('hidden');
     } else {
@@ -159,7 +159,7 @@ function updateExplanations(password, poolSize, length, searchSpace, expectedTim
             const li = document.createElement('li');
             li.textContent = `• ${p.name}: −${p.loss} бит`;
             if (p.loss > 20) {
-                li.style.color = '#d32f2f';
+                li.style.color = '#b3261e';
                 li.style.fontWeight = 'bold';
             }
             patternsList.appendChild(li);
@@ -192,18 +192,18 @@ function findPatterns(password) {
 }
 
 function getEntropyInterpretation(entropy) {
-    if (entropy < 40) return '🔴 Очень слабая: взлом мгновенно';
-    if (entropy < 60) return '🟠 Слабая: минуты/часы';
-    if (entropy < 80) return '🟡 Средняя: приемлемо';
-    if (entropy < 100) return '🟢 Сильная: хорошая защита';
-    return '🟣 Очень сильная: практически невозможно';
+    if (entropy < 40) return 'Очень слабая: взлом мгновенно';
+    if (entropy < 60) return 'Слабая: минуты/часы';
+    if (entropy < 80) return 'Средняя: приемлемо';
+    if (entropy < 100) return 'Сильная: хорошая защита';
+    return 'Очень сильная: практически невозможно';
 }
 
 function getEntropyColor(entropy) {
-    if (entropy < 40) return '#c62828';  // Тёмно-красный (было #ef5350)
-    if (entropy < 60) return '#ef6c00';  // Тёмно-оранжевый (было #ffa726)
-    if (entropy < 80) return '#f9a825';  // Тёмно-жёлтый (было #ffee58)
-    return '#2e7d32';                     // Тёмно-зелёный (было #66bb6a)
+    if (entropy < 40) return '#b3261e';  // Тёмно-красный (было #ef5350)
+    if (entropy < 60) return '#b26a00';  // Тёмно-оранжевый (было #ffa726)
+    if (entropy < 80) return '#8a7400';  // Тёмно-жёлтый (было #ffee58)
+    return '#1e7a4c';                     // Тёмно-зелёный (было #66bb6a)
 }
 
 function formatLargeNumber(bigNum) {
@@ -238,6 +238,8 @@ function renderChart(currentLength, poolSize) {
     
     if (chartInstance) chartInstance.destroy();
     
+    Chart.defaults.font.family = "'Golos Text', system-ui, sans-serif";
+    Chart.defaults.color = '#5d6a76';
     chartInstance = new Chart(context, {
         type: 'line',
         data: {
@@ -245,9 +247,12 @@ function renderChart(currentLength, poolSize) {
             datasets: [{
                 label: 'log₁₀(N)',
                  data,
-                borderColor: '#667eea',
-                backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                tension: 0.4,
+                borderColor: '#0b6e69',
+                backgroundColor: 'rgba(11, 110, 105, 0.08)',
+                tension: 0,
+                borderWidth: 2,
+                pointRadius: 3,
+                pointBackgroundColor: '#0b6e69',
                 fill: true
             }]
         },
@@ -257,11 +262,13 @@ function renderChart(currentLength, poolSize) {
             scales: {
                 y: {
                     beginAtZero: true,
-                    title: { display: true, text: 'Порядок числа (10^x)' }
+                    title: { display: true, text: 'Порядок числа (10^x)' },
+                    grid: { color: '#e3e8eb' }
                 },
                 x: {
 		    beginAtZero: true,
-                    title: { display: true, text: 'Длина пароля' }
+                    title: { display: true, text: 'Длина пароля' },
+                    grid: { color: '#e3e8eb' }
                 }
             }
         }
@@ -278,18 +285,18 @@ function generateRecommendations(password, poolSize, length, entropy, effectiveE
         list.appendChild(li);
     };
     
-    if (patternLoss > 20) add(`⚠️ Найдены паттерны! Потеряно ~${patternLoss.toFixed(0)} бит`);
-    if (length < 12) add(`📈 Увеличьте длину — стойкость вырастет в ${poolSize} раз`);
-    if (!/[0-9]/.test(password)) add('➕ Добавьте цифры');
-    if (!/[A-Z]/.test(password)) add('➕ Добавьте заглавные буквы');
-    if (!/[^a-zA-Z0-9]/.test(password)) add('➕ Добавьте спецсимволы');
-    if (effectiveEntropy >= 80) add('🟢 Отличная энтропия!');
+    if (patternLoss > 20) add(`Найдены паттерны! Потеряно ~${patternLoss.toFixed(0)} бит`);
+    if (length < 12) add(`Увеличьте длину — стойкость вырастет в ${poolSize} раз`);
+    if (!/[0-9]/.test(password)) add('Добавьте цифры');
+    if (!/[A-Z]/.test(password)) add('Добавьте заглавные буквы');
+    if (!/[^a-zA-Z0-9]/.test(password)) add('Добавьте спецсимволы');
+    if (effectiveEntropy >= 80) add('Отличная энтропия!');
 }
 
 async function checkBreach(password) {
     try {
         breachStatusEl.textContent = 'Проверка...';
-        breachStatusEl.style.color = '#f57c00';
+        breachStatusEl.style.color = '#b26a00';
         
         const commonPasswords = [
             '123456', 'password', '12345678', 'qwerty', '123456789',
@@ -301,8 +308,8 @@ async function checkBreach(password) {
         ];
         
         if (commonPasswords.includes(password.toLowerCase())) {
-            breachStatusEl.textContent = '⚠️ Найден в базе популярных паролей';
-            breachStatusEl.style.color = '#c62828';
+            breachStatusEl.textContent = 'Найден в базе популярных паролей';
+            breachStatusEl.style.color = '#b3261e';
             return;
         }
         
@@ -327,21 +334,20 @@ async function checkBreach(password) {
         
         if (found) {
             const count = found.split(':')[1].trim();
-            breachStatusEl.textContent = `⚠️ Найден в базах (${parseInt(count).toLocaleString()} раз)`;
-            breachStatusEl.style.color = '#c62828';
+            breachStatusEl.textContent = `Найден в базах (${parseInt(count).toLocaleString()} раз)`;
+            breachStatusEl.style.color = '#b3261e';
         } else {
-            breachStatusEl.textContent = '✅ Не найден в известных утечках';
-            breachStatusEl.style.color = '#2e7d32';
+            breachStatusEl.textContent = 'Не найден в известных утечках';
+            breachStatusEl.style.color = '#1e7a4c';
         }
         
     } catch (error) {
         if (password.length >= 12 && /[A-Z]/.test(password) && /[^a-zA-Z0-9]/.test(password)) {
-            breachStatusEl.textContent = '✅ (Оффлайн) Пароль достаточно сложен';
-            breachStatusEl.style.color = '#2e7d32';
+            breachStatusEl.textContent = '(Оффлайн) Пароль достаточно сложен';
+            breachStatusEl.style.color = '#1e7a4c';
         } else {
-            breachStatusEl.textContent = 'ℹ️ Проверка недоступна';
-            breachStatusEl.style.color = '#757575';
+            breachStatusEl.textContent = 'Проверка недоступна';
+            breachStatusEl.style.color = '#5d6a76';
         }
     }
 }
-
